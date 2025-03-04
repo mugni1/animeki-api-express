@@ -6,6 +6,25 @@ const app = express();
 const PORT = 3030;
 
 // JADWAL
+app.get("/", async (req, res) => {
+  res.json({
+    message: "nyari apa abangku",
+    enpoints: {
+      endpoint1: {
+        message: "GET JADWAL ANIME TERBARU",
+        link: "https://animeki-api-express.vercel.app/jadwal",
+      },
+      endpoint2: {
+        message: "GET ANIME DETAIL",
+        link: "https://animeki-api-express.vercel.app/anime/:slug",
+      },
+      endpoint3: {
+        message: "GET SEARCH ANIME RESULT",
+        link: "https://animeki-api-express.vercel.app/search/?s=naruto",
+      },
+    },
+  });
+});
 app.get("/jadwal", async (req, res) => {
   try {
     const url = "https://gojonime.com/jadwal-on-going-anime/"; // URL Detik.com bagian berita terpopuler
