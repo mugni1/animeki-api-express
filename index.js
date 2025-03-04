@@ -22,11 +22,11 @@ app.get("/", async (req, res) => {
         message: "GET SEARCH ANIME RESULT",
         link: "https://animeki-api-express.vercel.app/search/?s=naruto",
       },
-      search_anime: {
+      genres: {
         message: "GET GENRE LIST",
         link: "https://animeki-api-express.vercel.app/genres",
       },
-      search_anime: {
+      genres_anime_list: {
         message: "GET ANIME LIST WITH GENRE",
         link: "https://animeki-api-express.vercel.app/genres/:slug",
       },
