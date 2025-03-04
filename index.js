@@ -26,6 +26,10 @@ app.get("/", async (req, res) => {
         message: "GET GENRE LIST",
         link: "https://animeki-api-express.vercel.app/genres",
       },
+      search_anime: {
+        message: "GET ANIME LIST WITH GENRE",
+        link: "https://animeki-api-express.vercel.app/genres/:slug",
+      },
     },
     scraper: "A",
   });
@@ -206,6 +210,56 @@ app.get("/genres", async (req, res) => {
       results.push({ name, count, slug });
     });
     res.status(200).json({ success: true, results: results });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// LIST ANIME WITH GENRES
+app.get("/genres/:id", async (req, res) => {
+  try {
+    const slug = req.params.id;
+    const baseUrl = `https://gojonime.com/genres/${slug}`;
+    const { data } = await axios({ method: "get", url: baseUrl });
+    const $ = cheerio.load(data);
+
+    let result = [];
+    let animes = [];
+    let pagination = [];
+    // ANIMES
+    $(".tip").map((index, element) => {
+      const slug = $(element).attr("href").split("/").filter(Boolean).pop();
+      const type = $(element).find(".limit .typez").text().trim();
+      const status = $(element).find(".limit .bt .epx").text().trim();
+      const image = $(element).find(".limit img").attr("src");
+      const title = $(element).find(".tt h2").text().trim();
+      animes.push({ title, image, slug, type, status });
+    });
+    // END ANIMES
+    // PAGINATION
+    let prev = $(".pagination .prev").attr("href")
+      ? $(".pagination .prev").attr("href").split("/").filter(Boolean)[3]
+      : null;
+    let next = $(".pagination .next").attr("href")
+      ? $(".pagination .next").attr("href").split("/").filter(Boolean)[3]
+      : null;
+    let currentPage = $(".pagination .current").text().trim();
+    let pageNumbers = [];
+    $(".pagination .page-numbers").map((index, element) => {
+      const page = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean)[3]
+        : null;
+      const search = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean).pop()
+        : null;
+      const teks = $(element).text().trim();
+      pageNumbers.push({ teks, page, search });
+    });
+    pagination.push({ prev, next, currentPage, pageNumbers });
+    /// END PAGINATION
+
+    /// HASIL AKHIR
+    result.push({ animes, pagination });
+    res.status(200).json({ success: false, message: [result] });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
