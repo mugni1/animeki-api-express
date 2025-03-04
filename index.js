@@ -9,21 +9,25 @@ const PORT = 3030;
 app.get("/", async (req, res) => {
   res.json({
     message: "NYARI APA BANG?",
-    enpoints: {
-      endpoint1: {
+    endpoints: {
+      jadwal_anime: {
         message: "GET JADWAL ANIME TERBARU",
         link: "https://animeki-api-express.vercel.app/jadwal",
       },
-      endpoint2: {
+      anime_detail: {
         message: "GET ANIME DETAIL",
         link: "https://animeki-api-express.vercel.app/anime/solo-leveling",
       },
-      endpoint3: {
+      search_anime: {
         message: "GET SEARCH ANIME RESULT",
         link: "https://animeki-api-express.vercel.app/search/?s=naruto",
       },
+      search_anime: {
+        message: "GET GENRE LIST",
+        link: "https://animeki-api-express.vercel.app/genres",
+      },
     },
-    SCRAPER: "INITIAL A",
+    scraper: "A",
   });
 });
 app.get("/jadwal", async (req, res) => {
@@ -180,6 +184,30 @@ app.get("/search/", async (req, res) => {
     } catch (error) {
       res.status(404).json({ success: false, message: error.message });
     }
+  }
+});
+// GENTRE LIST
+app.get("/genres", async (req, res) => {
+  try {
+    const baseUrl = "https://gojonime.com/daftar-genre/";
+    const { data } = await axios({ method: "get", url: baseUrl });
+    const $ = cheerio.load(data);
+
+    let results = [];
+    $(".taxindex li").map((index, element) => {
+      const slug = $(element)
+        .find("a")
+        .attr("href")
+        .split("/")
+        .filter(Boolean)
+        .pop();
+      const name = $(element).find("a .name").text().trim();
+      const count = $(element).find("a .count").text().trim();
+      results.push({ name, count, slug });
+    });
+    res.status(200).json({ success: true, results: results });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 app.listen(PORT, () =>
