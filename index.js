@@ -16,7 +16,7 @@ app.get("/", async (req, res) => {
       },
       endpoint2: {
         message: "GET ANIME DETAIL",
-        link: "https://animeki-api-express.vercel.app/anime/:slug",
+        link: "https://animeki-api-express.vercel.app/anime/solo-leveling",
       },
       endpoint3: {
         message: "GET SEARCH ANIME RESULT",
