@@ -8,7 +8,7 @@ const PORT = 3030;
 // JADWAL
 app.get("/", async (req, res) => {
   res.json({
-    message: "nyari apa abangku",
+    message: "NYARI APA BANG?",
     enpoints: {
       endpoint1: {
         message: "GET JADWAL ANIME TERBARU",
