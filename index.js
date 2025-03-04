@@ -23,6 +23,7 @@ app.get("/", async (req, res) => {
         link: "https://animeki-api-express.vercel.app/search/?s=naruto",
       },
     },
+    scrapper_by: "AAM",
   });
 });
 app.get("/jadwal", async (req, res) => {
