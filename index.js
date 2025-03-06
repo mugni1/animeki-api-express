@@ -28,7 +28,19 @@ app.get("/", async (req, res) => {
       },
       genres_anime_list: {
         message: "GET ANIME LIST WITH GENRE",
-        link: "https://animeki-api-express.vercel.app/genres/:slug",
+        link: "https://animeki-api-express.vercel.app/genres/:genre",
+      },
+      genres_anime_list_with_page: {
+        message: "GET ANIME LIST WITH GENRE AND PAGE",
+        link: "https://animeki-api-express.vercel.app/genres/:genre/page/:page",
+      },
+      movie_anime_list: {
+        message: "GET MOVIE LIST ANIME",
+        link: "https://animeki-api-express.vercel.app/movie",
+      },
+      movie_anime_list_with_page: {
+        message: "GET MOVIE LIST ANIME WITH PAGE",
+        link: "https://animeki-api-express.vercel.app/movie/page/:page",
       },
     },
     scraper: "A",
@@ -215,9 +227,9 @@ app.get("/genres", async (req, res) => {
   }
 });
 // LIST ANIME WITH GENRES
-app.get("/genres/:id", async (req, res) => {
+app.get("/genres/:genre", async (req, res) => {
   try {
-    const slug = req.params.id;
+    const slug = req.params.genre;
     const baseUrl = `https://gojonime.com/genres/${slug}`;
     const { data } = await axios({ method: "get", url: baseUrl });
     const $ = cheerio.load(data);
@@ -236,25 +248,180 @@ app.get("/genres/:id", async (req, res) => {
     });
     // END ANIMES
     // PAGINATION
-    let prev = $(".pagination .prev").attr("href")
-      ? $(".pagination .prev").attr("href").split("/").filter(Boolean)[3]
+    let prevPage = $(".pagination .prev").attr("href")
+      ? $(".pagination .prev").attr("href").split("/").filter(Boolean).pop()
       : null;
-    let next = $(".pagination .next").attr("href")
-      ? $(".pagination .next").attr("href").split("/").filter(Boolean)[3]
+    let nextPage = $(".pagination .next").attr("href")
+      ? $(".pagination .next").attr("href").split("/").filter(Boolean).pop()
       : null;
+
     let currentPage = $(".pagination .current").text().trim();
     let pageNumbers = [];
     $(".pagination .page-numbers").map((index, element) => {
-      const page = $(element).attr("href")
+      const genre = $(element).attr("href")
         ? $(element).attr("href").split("/").filter(Boolean)[3]
         : null;
-      const search = $(element).attr("href")
+      const page = $(element).attr("href")
         ? $(element).attr("href").split("/").filter(Boolean).pop()
         : null;
       const teks = $(element).text().trim();
-      pageNumbers.push({ teks, page, search });
+      pageNumbers.push({ teks, genre, page });
     });
-    pagination.push({ prev, next, currentPage, pageNumbers });
+    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    /// END PAGINATION
+
+    /// HASIL AKHIR
+    result.push({ animes, pagination });
+    res.status(200).json({ success: false, message: [result] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// LIST ANIME WITH GENRES AND PAGE
+app.get("/genres/:genre/page/:page", async (req, res) => {
+  try {
+    const slug = req.params.genre;
+    const page = req.params.page;
+    const baseUrl = `https://gojonime.com/genres/${slug}/page/${page}`;
+    const { data } = await axios({ method: "get", url: baseUrl });
+    const $ = cheerio.load(data);
+
+    let result = [];
+    let animes = [];
+    let pagination = [];
+    // ANIMES
+    $(".tip").map((index, element) => {
+      const slug = $(element).attr("href").split("/").filter(Boolean).pop();
+      const type = $(element).find(".limit .typez").text().trim();
+      const status = $(element).find(".limit .bt .epx").text().trim();
+      const image = $(element).find(".limit img").attr("src");
+      const title = $(element).find(".tt h2").text().trim();
+      animes.push({ title, image, slug, type, status });
+    });
+    // END ANIMES
+    // PAGINATION
+    let prevPage = $(".pagination .prev").attr("href")
+      ? $(".pagination .prev").attr("href").split("/").filter(Boolean).pop()
+      : null;
+    let nextPage = $(".pagination .next").attr("href")
+      ? $(".pagination .next").attr("href").split("/").filter(Boolean).pop()
+      : null;
+
+    let currentPage = $(".pagination .current").text().trim();
+    let pageNumbers = [];
+    $(".pagination .page-numbers").map((index, element) => {
+      const genre = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean)[3]
+        : null;
+      const page = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean).pop()
+        : null;
+      const teks = $(element).text().trim();
+      pageNumbers.push({ teks, genre, page });
+    });
+    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    /// END PAGINATION
+
+    /// HASIL AKHIR
+    result.push({ animes, pagination });
+    res.status(200).json({ success: false, message: [result] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// MOVIE LIST
+app.get("/movie", async (req, res) => {
+  try {
+    const slug = req.params.id;
+    const baseUrl = `https://gojonime.com/movie/`;
+    const { data } = await axios({ method: "get", url: baseUrl });
+    const $ = cheerio.load(data);
+
+    let result = [];
+    let animes = [];
+    let pagination = [];
+    // ANIMES
+    $(".tip").map((index, element) => {
+      const slug = $(element).attr("href").split("/").filter(Boolean).pop();
+      const type = $(element).find(".limit .typez").text().trim();
+      const status = $(element).find(".limit .bt .epx").text().trim();
+      const image = $(element).find(".limit img").attr("src");
+      const title = $(element).find(".tt h2").text().trim();
+      animes.push({ title, image, slug, type, status });
+    });
+    // END ANIMES
+    // PAGINATION
+    let prevPage = $(".pagination .prev").attr("href")
+      ? $(".pagination .prev").attr("href").split("/").filter(Boolean).pop()
+      : null;
+    let nextPage = $(".pagination .next").attr("href")
+      ? $(".pagination .next").attr("href").split("/").filter(Boolean).pop()
+      : null;
+
+    let currentPage = $(".pagination .current").text().trim();
+    let pageNumbers = [];
+    $(".pagination .page-numbers").map((index, element) => {
+      const params = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean)[3]
+        : null;
+      const page = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean).pop()
+        : null;
+      const teks = $(element).text().trim();
+      pageNumbers.push({ teks, params, page });
+    });
+    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    /// END PAGINATION
+
+    /// HASIL AKHIR
+    result.push({ animes, pagination });
+    res.status(200).json({ success: false, message: [result] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// MOVIE LIST WITH PAGE
+app.get("/movie/page/:page", async (req, res) => {
+  try {
+    const page = req.params.page;
+    const baseUrl = `https://gojonime.com/movie/page/${page}`;
+    const { data } = await axios({ method: "get", url: baseUrl });
+    const $ = cheerio.load(data);
+
+    let result = [];
+    let animes = [];
+    let pagination = [];
+    // ANIMES
+    $(".tip").map((index, element) => {
+      const slug = $(element).attr("href").split("/").filter(Boolean).pop();
+      const type = $(element).find(".limit .typez").text().trim();
+      const status = $(element).find(".limit .bt .epx").text().trim();
+      const image = $(element).find(".limit img").attr("src");
+      const title = $(element).find(".tt h2").text().trim();
+      animes.push({ title, image, slug, type, status });
+    });
+    // END ANIMES
+    // PAGINATION
+    let prevPage = $(".pagination .prev").attr("href")
+      ? $(".pagination .prev").attr("href").split("/").filter(Boolean).pop()
+      : null;
+    let nextPage = $(".pagination .next").attr("href")
+      ? $(".pagination .next").attr("href").split("/").filter(Boolean).pop()
+      : null;
+
+    let currentPage = $(".pagination .current").text().trim();
+    let pageNumbers = [];
+    $(".pagination .page-numbers").map((index, element) => {
+      const params = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean)[3]
+        : null;
+      const page = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean).pop()
+        : null;
+      const teks = $(element).text().trim();
+      pageNumbers.push({ teks, params, page });
+    });
+    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
     /// END PAGINATION
 
     /// HASIL AKHIR
