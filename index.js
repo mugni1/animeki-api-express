@@ -12,11 +12,11 @@ app.get("/", async (req, res) => {
     endpoints: {
       jadwal_anime: {
         message: "GET JADWAL ANIME TERBARU",
-        link: "https://animeki-api-express.vercel.app/jadwal",
+        link: "https://animeki-api-express.vercel.app/schedule",
       },
       anime_detail: {
         message: "GET ANIME DETAIL",
-        link: "https://animeki-api-express.vercel.app/anime/solo-leveling",
+        link: "https://animeki-api-express.vercel.app/anime/:slug",
       },
       search_anime: {
         message: "GET SEARCH ANIME RESULT",
@@ -42,41 +42,55 @@ app.get("/", async (req, res) => {
         message: "GET MOVIE LIST ANIME WITH PAGE",
         link: "https://animeki-api-express.vercel.app/movie/page/:page",
       },
+      ongoing_anime_list: {
+        message: "GET ONGOING LIST ANIME",
+        link: "https://animeki-api-express.vercel.app/ongoing",
+      },
+      ongoing_anime_list_with_page: {
+        message: "GET ONGOING LIST ANIME WITH PAGE",
+        link: "https://animeki-api-express.vercel.app/ongoing/page/:page",
+      },
+      completed_anime_list: {
+        message: "GET COMPLETED LIST ANIME",
+        link: "https://animeki-api-express.vercel.app/completed",
+      },
+      completed_anime_list_with_page: {
+        message: "GET COMPLETED LIST ANIME WITH PAGE",
+        link: "https://animeki-api-express.vercel.app/completed/page/:page",
+      },
     },
     scraper: "A",
   });
 });
-app.get("/jadwal", async (req, res) => {
+// STREAM ANIME
+app.get("/anime/play/:slug", async (req, res) => {
   try {
-    const url = "https://gojonime.com/jadwal-on-going-anime/"; // URL Detik.com bagian berita terpopuler
-    const { data } = await axios.get(url);
+    const slug = req.params.slug;
+    const baseUrl = `https://gojonime.com/${slug}`;
+    const { data } = await axios({ method: "get", url: baseUrl });
     const $ = cheerio.load(data);
-    // INISIALISASI RESULT
-    let results = [];
-    // AMBIL DAYA
-    $(".bixbox.schedulepage").each((index, element) => {
-      // days
-      let day = $(element).find(".releases h3 span").text().trim();
-      //   list animes
-      let animes = [];
-      $(element)
-        .find(".listupd .bs .bsx a")
-        .each((index, element) => {
-          let link = $(element).attr("href").split("/").filter(Boolean).pop();
-          let img = $(element).find(".limit img").attr("src");
-          let alt = $(element).find(".limit img").attr("alt");
-          let title = $(element).attr("title");
-          animes.push({ img, alt, title, link });
-        });
-      results.push({ day, animes });
+
+    const src_player_default = $(".player-embed iframe").attr("src");
+    const episode_title = $(".entry-title").text().trim();
+    const episode_year = $(".year").text().trim().replace(/\s+/g, " ");
+
+    let servers = [];
+    $(".mirror option").map((index, element) => {
+      const server_src = $(element).attr("value");
+      const server_title = $(element).text().trim();
+      servers.push({ server_title, server_src });
     });
-    // RENDER KE USER
-    res.status(200).json({ success: true, results: results });
+    servers.splice(0, 1);
+    // hasil
+    res.status(200).json({
+      success: true,
+      data: [{ episode_title, episode_year, src_player_default, servers }],
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-// END SEARCH
+// DETAILS ANIME
 app.get("/anime/:slug", async (req, res) => {
   try {
     const slug = req.params.slug;
@@ -111,7 +125,7 @@ app.get("/anime/:slug", async (req, res) => {
 
     let episodes = [];
     $(".eplister ul li a").map((index, element) => {
-      let episode_link = $(element)
+      let episode_slug = $(element)
         .attr("href")
         .split("/")
         .filter(Boolean)
@@ -119,7 +133,7 @@ app.get("/anime/:slug", async (req, res) => {
       let episode_no = $(element).find(".epl-num").text().trim();
       let episode_title = $(element).find(".epl-title").text().trim();
       let episode_date = $(element).find(".epl-date").text().trim();
-      episodes.push({ episode_title, episode_link, episode_no, episode_date });
+      episodes.push({ episode_title, episode_slug, episode_no, episode_date });
     });
 
     anime.push({
@@ -144,7 +158,38 @@ app.get("/anime/:slug", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-// SEARCH
+// SCHEDULE ANIME
+app.get("/schedule", async (req, res) => {
+  try {
+    const url = "https://gojonime.com/jadwal-on-going-anime/"; // URL Detik.com bagian berita terpopuler
+    const { data } = await axios.get(url);
+    const $ = cheerio.load(data);
+    // INISIALISASI RESULT
+    let results = [];
+    // AMBIL DAYA
+    $(".bixbox.schedulepage").each((index, element) => {
+      // days
+      let day = $(element).find(".releases h3 span").text().trim();
+      //   list animes
+      let animes = [];
+      $(element)
+        .find(".listupd .bs .bsx a")
+        .each((index, element) => {
+          let link = $(element).attr("href").split("/").filter(Boolean).pop();
+          let img = $(element).find(".limit img").attr("src");
+          let alt = $(element).find(".limit img").attr("alt");
+          let title = $(element).attr("title");
+          animes.push({ img, alt, title, link });
+        });
+      results.push({ day, animes });
+    });
+    // RENDER KE USER
+    res.status(200).json({ success: true, results: results });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// SEARCH ANIME
 app.get("/search/", async (req, res) => {
   const searchParams = req.query.s;
   const page = req.query.page;
@@ -226,7 +271,7 @@ app.get("/genres", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-// LIST ANIME WITH GENRES
+// ANIME WITH GENRES
 app.get("/genres/:genre", async (req, res) => {
   try {
     const slug = req.params.genre;
@@ -277,7 +322,7 @@ app.get("/genres/:genre", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-// LIST ANIME WITH GENRES AND PAGE
+// ANIME WITH GENRES AND PAGE
 app.get("/genres/:genre/page/:page", async (req, res) => {
   try {
     const slug = req.params.genre;
@@ -329,7 +374,209 @@ app.get("/genres/:genre/page/:page", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-// MOVIE LIST
+// ONGOING ANIME
+app.get("/ongoing", async (req, res) => {
+  try {
+    const baseUrl = `https://gojonime.com/on-going-anime/`;
+    const { data } = await axios({ method: "get", url: baseUrl });
+    const $ = cheerio.load(data);
+
+    let result = [];
+    let animes = [];
+    let pagination = [];
+    // ANIMES
+    $(".tip").map((index, element) => {
+      const slug = $(element).attr("href").split("/").filter(Boolean).pop();
+      const type = $(element).find(".limit .typez").text().trim();
+      const status = $(element).find(".limit .bt .epx").text().trim();
+      const image = $(element).find(".limit img").attr("src");
+      const title = $(element).find(".tt h2").text().trim();
+      animes.push({ title, image, slug, type, status });
+    });
+    // END ANIMES
+    // PAGINATION
+    let prevPage = $(".pagination .prev").attr("href")
+      ? $(".pagination .prev").attr("href").split("/").filter(Boolean).pop()
+      : null;
+    let nextPage = $(".pagination .next").attr("href")
+      ? $(".pagination .next").attr("href").split("/").filter(Boolean).pop()
+      : null;
+
+    let currentPage = $(".pagination .current").text().trim();
+    let pageNumbers = [];
+    $(".pagination .page-numbers").map((index, element) => {
+      const params = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean)[3]
+        : null;
+      const page = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean).pop()
+        : null;
+      const teks = $(element).text().trim();
+      pageNumbers.push({ teks, params, page });
+    });
+    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    /// END PAGINATION
+
+    /// HASIL AKHIR
+    result.push({ animes, pagination });
+    res.status(200).json({ success: false, message: [result] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// ONGOING ANIME WITH PAGE
+app.get("/ongoing/page/:page", async (req, res) => {
+  try {
+    const page = req.params.page;
+    const baseUrl = `https://gojonime.com/on-going-anime/page/${page}`;
+    const { data } = await axios({ method: "get", url: baseUrl });
+    const $ = cheerio.load(data);
+
+    let result = [];
+    let animes = [];
+    let pagination = [];
+    // ANIMES
+    $(".tip").map((index, element) => {
+      const slug = $(element).attr("href").split("/").filter(Boolean).pop();
+      const type = $(element).find(".limit .typez").text().trim();
+      const status = $(element).find(".limit .bt .epx").text().trim();
+      const image = $(element).find(".limit img").attr("src");
+      const title = $(element).find(".tt h2").text().trim();
+      animes.push({ title, image, slug, type, status });
+    });
+    // END ANIMES
+    // PAGINATION
+    let prevPage = $(".pagination .prev").attr("href")
+      ? $(".pagination .prev").attr("href").split("/").filter(Boolean).pop()
+      : null;
+    let nextPage = $(".pagination .next").attr("href")
+      ? $(".pagination .next").attr("href").split("/").filter(Boolean).pop()
+      : null;
+
+    let currentPage = $(".pagination .current").text().trim();
+    let pageNumbers = [];
+    $(".pagination .page-numbers").map((index, element) => {
+      const params = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean)[3]
+        : null;
+      const page = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean).pop()
+        : null;
+      const teks = $(element).text().trim();
+      pageNumbers.push({ teks, params, page });
+    });
+    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    /// END PAGINATION
+
+    /// HASIL AKHIR
+    result.push({ animes, pagination });
+    res.status(200).json({ success: false, message: [result] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// COMPLETED ANIME
+app.get("/completed", async (req, res) => {
+  try {
+    const baseUrl = `https://gojonime.com/completed-anime/`;
+    const { data } = await axios({ method: "get", url: baseUrl });
+    const $ = cheerio.load(data);
+
+    let result = [];
+    let animes = [];
+    let pagination = [];
+    // ANIMES
+    $(".tip").map((index, element) => {
+      const slug = $(element).attr("href").split("/").filter(Boolean).pop();
+      const type = $(element).find(".limit .typez").text().trim();
+      const status = $(element).find(".limit .bt .epx").text().trim();
+      const image = $(element).find(".limit img").attr("src");
+      const title = $(element).find(".tt h2").text().trim();
+      animes.push({ title, image, slug, type, status });
+    });
+    // END ANIMES
+    // PAGINATION
+    let prevPage = $(".pagination .prev").attr("href")
+      ? $(".pagination .prev").attr("href").split("/").filter(Boolean).pop()
+      : null;
+    let nextPage = $(".pagination .next").attr("href")
+      ? $(".pagination .next").attr("href").split("/").filter(Boolean).pop()
+      : null;
+
+    let currentPage = $(".pagination .current").text().trim();
+    let pageNumbers = [];
+    $(".pagination .page-numbers").map((index, element) => {
+      const params = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean)[3]
+        : null;
+      const page = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean).pop()
+        : null;
+      const teks = $(element).text().trim();
+      pageNumbers.push({ teks, params, page });
+    });
+    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    /// END PAGINATION
+
+    /// HASIL AKHIR
+    result.push({ animes, pagination });
+    res.status(200).json({ success: false, message: [result] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// COMPLETED ANIME WITH PAGE
+app.get("/completed/page/:page", async (req, res) => {
+  try {
+    const page = req.params.page;
+    const baseUrl = `https://gojonime.com/completed-anime/page/${page}`;
+    const { data } = await axios({ method: "get", url: baseUrl });
+    const $ = cheerio.load(data);
+
+    let result = [];
+    let animes = [];
+    let pagination = [];
+    // ANIMES
+    $(".tip").map((index, element) => {
+      const slug = $(element).attr("href").split("/").filter(Boolean).pop();
+      const type = $(element).find(".limit .typez").text().trim();
+      const status = $(element).find(".limit .bt .epx").text().trim();
+      const image = $(element).find(".limit img").attr("src");
+      const title = $(element).find(".tt h2").text().trim();
+      animes.push({ title, image, slug, type, status });
+    });
+    // END ANIMES
+    // PAGINATION
+    let prevPage = $(".pagination .prev").attr("href")
+      ? $(".pagination .prev").attr("href").split("/").filter(Boolean).pop()
+      : null;
+    let nextPage = $(".pagination .next").attr("href")
+      ? $(".pagination .next").attr("href").split("/").filter(Boolean).pop()
+      : null;
+
+    let currentPage = $(".pagination .current").text().trim();
+    let pageNumbers = [];
+    $(".pagination .page-numbers").map((index, element) => {
+      const params = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean)[3]
+        : null;
+      const page = $(element).attr("href")
+        ? $(element).attr("href").split("/").filter(Boolean).pop()
+        : null;
+      const teks = $(element).text().trim();
+      pageNumbers.push({ teks, params, page });
+    });
+    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    /// END PAGINATION
+
+    /// HASIL AKHIR
+    result.push({ animes, pagination });
+    res.status(200).json({ success: false, message: [result] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+// MOVIE ANIME
 app.get("/movie", async (req, res) => {
   try {
     const slug = req.params.id;
@@ -380,7 +627,7 @@ app.get("/movie", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-// MOVIE LIST WITH PAGE
+// MOVIE ANIME WITH PAGE
 app.get("/movie/page/:page", async (req, res) => {
   try {
     const page = req.params.page;
