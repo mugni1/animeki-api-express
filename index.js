@@ -18,6 +18,10 @@ app.get("/", async (req, res) => {
         message: "GET ANIME DETAIL",
         link: "https://animeki-api-express.vercel.app/anime/:slug",
       },
+      anime_play: {
+        message: "GET PLAY EPISODE",
+        link: "https://animeki-api-express.vercel.app/play/:slug",
+      },
       search_anime: {
         message: "GET SEARCH ANIME RESULT",
         link: "https://animeki-api-express.vercel.app/search/?s=naruto",
@@ -63,7 +67,7 @@ app.get("/", async (req, res) => {
   });
 });
 // STREAM ANIME
-app.get("/anime/play/:slug", async (req, res) => {
+app.get("/play/:slug", async (req, res) => {
   try {
     const slug = req.params.slug;
     const baseUrl = `https://gojonime.com/${slug}`;
