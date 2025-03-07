@@ -321,7 +321,7 @@ app.get("/genres/:genre", async (req, res) => {
 
     /// HASIL AKHIR
     result.push({ animes, pagination });
-    res.status(200).json({ success: false, message: [result] });
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -373,7 +373,7 @@ app.get("/genres/:genre/page/:page", async (req, res) => {
 
     /// HASIL AKHIR
     result.push({ animes, pagination });
-    res.status(200).json({ success: false, message: [result] });
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -423,7 +423,7 @@ app.get("/ongoing", async (req, res) => {
 
     /// HASIL AKHIR
     result.push({ animes, pagination });
-    res.status(200).json({ success: false, message: [result] });
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -474,7 +474,7 @@ app.get("/ongoing/page/:page", async (req, res) => {
 
     /// HASIL AKHIR
     result.push({ animes, pagination });
-    res.status(200).json({ success: false, message: [result] });
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -524,7 +524,7 @@ app.get("/completed", async (req, res) => {
 
     /// HASIL AKHIR
     result.push({ animes, pagination });
-    res.status(200).json({ success: false, message: [result] });
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -575,7 +575,7 @@ app.get("/completed/page/:page", async (req, res) => {
 
     /// HASIL AKHIR
     result.push({ animes, pagination });
-    res.status(200).json({ success: false, message: [result] });
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -626,7 +626,7 @@ app.get("/movie", async (req, res) => {
 
     /// HASIL AKHIR
     result.push({ animes, pagination });
-    res.status(200).json({ success: false, message: [result] });
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -677,7 +677,7 @@ app.get("/movie/page/:page", async (req, res) => {
 
     /// HASIL AKHIR
     result.push({ animes, pagination });
-    res.status(200).json({ success: false, message: [result] });
+    res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
