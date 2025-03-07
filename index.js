@@ -386,8 +386,8 @@ app.get("/ongoing", async (req, res) => {
     const $ = cheerio.load(data);
 
     let result = null;
+    let pagination = null;
     let animes = [];
-    let pagination = [];
     // ANIMES
     $(".tip").map((index, element) => {
       const slug = $(element).attr("href").split("/").filter(Boolean).pop();
@@ -405,7 +405,6 @@ app.get("/ongoing", async (req, res) => {
     let nextPage = $(".pagination .next").attr("href")
       ? $(".pagination .next").attr("href").split("/").filter(Boolean).pop()
       : null;
-
     let currentPage = $(".pagination .current").text().trim();
     let pageNumbers = [];
     $(".pagination .page-numbers").map((index, element) => {
@@ -418,11 +417,14 @@ app.get("/ongoing", async (req, res) => {
       const teks = $(element).text().trim();
       pageNumbers.push({ teks, params, page });
     });
-    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
     /// END PAGINATION
 
-    /// HASIL AKHIR
+    // SET SET
+    pagination = { prevPage, nextPage, currentPage, pageNumbers };
     result = { animes, pagination };
+    // END SET SET
+
+    /// HASIL AKHIR
     res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
