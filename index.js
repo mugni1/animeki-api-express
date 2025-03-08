@@ -206,9 +206,9 @@ app.get("/search/", async (req, res) => {
       const { data } = await axios({ method: "get", url: baseUrl });
       const $ = cheerio.load(data);
 
-      let results = [];
+      let results = null;
       let animes = [];
-      let pagination = [];
+      let pagination = null;
 
       /// RESULT ANIME
       $(".listupd .bs .bsx .tip").map((index, element) => {
@@ -240,11 +240,11 @@ app.get("/search/", async (req, res) => {
         const teks = $(element).text().trim();
         pageNumbers.push({ teks, page, search });
       });
-      pagination.push({ prev, next, currentPage, pageNumbers });
+      pagination = { prev, next, currentPage, pageNumbers };
       /// END PAGINATION
 
       // hasil
-      results.push({ animes, pagination });
+      results = { animes, pagination };
       res.status(200).json({ success: true, data: results });
     } catch (error) {
       res.status(404).json({ success: false, message: error.message });
