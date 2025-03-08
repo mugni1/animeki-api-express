@@ -378,7 +378,7 @@ app.get("/genres/:genre/page/:page", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-// ONGOING ANIME
+// ONGOING ANIME - done
 app.get("/ongoing", async (req, res) => {
   try {
     const baseUrl = `https://gojonime.com/on-going-anime/`;
@@ -488,9 +488,9 @@ app.get("/completed", async (req, res) => {
     const { data } = await axios({ method: "get", url: baseUrl });
     const $ = cheerio.load(data);
 
-    let result = [];
+    let result = null;
     let animes = [];
-    let pagination = [];
+    let pagination = null;
     // ANIMES
     $(".tip").map((index, element) => {
       const slug = $(element).attr("href").split("/").filter(Boolean).pop();
@@ -521,11 +521,11 @@ app.get("/completed", async (req, res) => {
       const teks = $(element).text().trim();
       pageNumbers.push({ teks, params, page });
     });
-    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    pagination = { prevPage, nextPage, currentPage, pageNumbers };
     /// END PAGINATION
 
     /// HASIL AKHIR
-    result.push({ animes, pagination });
+    result = { animes, pagination };
     res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
