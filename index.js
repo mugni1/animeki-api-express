@@ -438,7 +438,7 @@ app.get("/ongoing/page/:page", async (req, res) => {
     const { data } = await axios({ method: "get", url: baseUrl });
     const $ = cheerio.load(data);
 
-    let result = [];
+    let result = null;
     let animes = [];
     let pagination = [];
     // ANIMES
@@ -475,7 +475,7 @@ app.get("/ongoing/page/:page", async (req, res) => {
     /// END PAGINATION
 
     /// HASIL AKHIR
-    result.push({ animes, pagination });
+    result = { animes, pagination };
     res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
