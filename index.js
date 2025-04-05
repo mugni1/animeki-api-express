@@ -440,7 +440,7 @@ app.get("/ongoing/page/:page", async (req, res) => {
 
     let result = null;
     let animes = [];
-    let pagination = [];
+    let pagination = null;
     // ANIMES
     $(".tip").map((index, element) => {
       const slug = $(element).attr("href").split("/").filter(Boolean).pop();
@@ -471,7 +471,7 @@ app.get("/ongoing/page/:page", async (req, res) => {
       const teks = $(element).text().trim();
       pageNumbers.push({ teks, params, page });
     });
-    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    pagination = { prevPage, nextPage, currentPage, pageNumbers };
     /// END PAGINATION
 
     /// HASIL AKHIR
