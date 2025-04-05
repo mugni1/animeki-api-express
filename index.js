@@ -215,9 +215,9 @@ app.get("/search/", async (req, res) => {
         let title = $(element).find(".tt h2").text().trim();
         let image = $(element).find(".limit img").attr("src");
         let status = $(element).find(".limit .bt").text().trim();
-        let link = $(element).attr("href").split("/").filter(Boolean).pop();
+        let slug = $(element).attr("href").split("/").filter(Boolean).pop();
         let type = $(element).find(".limit .typez").text().trim();
-        animes.push({ title, image, status, link, type });
+        animes.push({ title, image, status, slug, type });
       });
       /// END RESULT ANNIME
 
