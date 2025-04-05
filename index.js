@@ -526,9 +526,15 @@ app.get("/completed", async (req, res) => {
 
     /// HASIL AKHIR
     result = { animes, pagination };
-    res.status(200).json({ success: true, data: result });
+    res
+      .setHeader("Access-Control-Allow-Origin", "*")
+      .status(200)
+      .json({ success: true, data: result });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res
+      .setHeader("Access-Control-Allow-Origin", "*")
+      .status(500)
+      .json({ success: false, message: error.message });
   }
 });
 // COMPLETED ANIME WITH PAGE
@@ -577,9 +583,15 @@ app.get("/completed/page/:page", async (req, res) => {
 
     /// HASIL AKHIR
     result = { animes, pagination };
-    res.status(200).json({ success: true, data: result });
+    res
+      .setHeader("Access-Control-Allow-Origin", "*")
+      .status(200)
+      .json({ success: true, data: result });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res
+      .setHeader("Access-Control-Allow-Origin", "*")
+      .status(500)
+      .json({ success: false, message: error.message });
   }
 });
 // MOVIE ANIME
