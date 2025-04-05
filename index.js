@@ -539,9 +539,9 @@ app.get("/completed/page/:page", async (req, res) => {
     const { data } = await axios({ method: "get", url: baseUrl });
     const $ = cheerio.load(data);
 
-    let result = [];
+    let result = null;
     let animes = [];
-    let pagination = [];
+    let pagination = null;
     // ANIMES
     $(".tip").map((index, element) => {
       const slug = $(element).attr("href").split("/").filter(Boolean).pop();
@@ -572,11 +572,11 @@ app.get("/completed/page/:page", async (req, res) => {
       const teks = $(element).text().trim();
       pageNumbers.push({ teks, params, page });
     });
-    pagination.push({ prevPage, nextPage, currentPage, pageNumbers });
+    pagination = { prevPage, nextPage, currentPage, pageNumbers };
     /// END PAGINATION
 
     /// HASIL AKHIR
-    result.push({ animes, pagination });
+    result = { animes, pagination };
     res.status(200).json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
