@@ -102,7 +102,7 @@ app.get("/anime/:slug", async (req, res) => {
     const { data } = await axios.get(baseUrl); // fetch url
     const $ = cheerio.load(data);
     // INIT PENAMPUNGAN DATA
-    let anime = []; // penampungan utama
+    let anime = null; // penampungan utama
     let image = $(".thumb").find("img").attr("src");
     let title = $(".infox .entry-title").text().trim();
     let subTitle = $(".mindesc").text().trim();
@@ -140,7 +140,7 @@ app.get("/anime/:slug", async (req, res) => {
       episodes.push({ episode_title, episode_slug, episode_no, episode_date });
     });
 
-    anime.push({
+    anime = {
       title,
       image,
       subTitle,
@@ -155,7 +155,7 @@ app.get("/anime/:slug", async (req, res) => {
       updated_date,
       category,
       episodes,
-    });
+    };
 
     res.status(200).json({ success: false, data: anime });
   } catch (error) {
