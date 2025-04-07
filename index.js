@@ -88,7 +88,7 @@ app.get("/play/:slug", async (req, res) => {
     // hasil
     res.status(200).json({
       success: true,
-      data: [{ episode_title, episode_year, src_player_default, servers }],
+      data: { episode_title, episode_year, src_player_default, servers },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
